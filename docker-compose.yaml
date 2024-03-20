@@ -1,0 +1,33 @@
+version: "3.8"
+
+services:
+  mongodb:
+    image: mongo:4.4.6
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    volumes:
+      - mongodb_data:/data/db
+
+  mosquitto:
+    image: eclipse-mosquitto:2.0
+    container_name: mosquitto
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - mosquitto_data:/mosquitto/data
+      - mosquitto_log:/mosquitto/log
+      - mosquitto_config:/mosquitto/config
+    environment:
+      - MOSQUITTO_USERNAME=root
+      - MOSQUITTO_PASSWORD=example
+
+volumes:
+  mongodb_data:
+  mosquitto_data:
+  mosquitto_log:
+  mosquitto_config:

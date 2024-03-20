@@ -3,8 +3,8 @@ const router = express.Router();
 
 const board_controller = require("../controllers/board.js");
 
-router.post("/boards", board_controller.saveBoard);
+router.post("/", board_controller.saveBoard);
 
-router.post("/boards", board_controller.getBoards);
+router.get("/", board_controller.getBoards);
 
 module.exports = router;
