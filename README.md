@@ -1,1 +1,1 @@
-# RemoteDevBoardConfig
+# RemoteDevBoardConfiguratorWebApp
