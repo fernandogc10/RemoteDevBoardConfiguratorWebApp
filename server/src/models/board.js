@@ -4,7 +4,11 @@ const Schema = mongoose.Schema;
 const boardSchema = new Schema({
   name: { type: String, required: true },
   ip: { type: String, required: true },
+  parameters: {
+    type: Map,
+    of: String,
+  },
 });
 
-const Board = mongoose.model("Board", accountSchema);
+const Board = mongoose.model("Board", boardSchema);
 module.exports = Board;

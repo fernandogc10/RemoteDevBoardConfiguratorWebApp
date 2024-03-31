@@ -4,35 +4,47 @@ const MQTT_TOPIC = "boards/registry";
 const DATABASE_NAME = "rdbc_db";
 const COLLECTION_NAME = "boards";
 
-const connectMQTT = () => {
+const connectMQTT = (dbClient) => {
   const client = mqtt.connect("mqtt://localhost:1883");
 
   client.on("connect", () => {
-    console.log("Conectado al broker MQTT");
+    console.log("Connected to MQTT server");
     client.subscribe(MQTT_TOPIC, (err) => {
       if (!err) {
-        console.log(`Suscripción al topic '${MQTT_TOPIC}' exitosa`);
+        console.log(`Suscription to topic '${MQTT_TOPIC}' done`);
       }
     });
   });
 
   client.on("message", async (topic, message) => {
-    console.log(
-      `Mensaje recibido en el topic '${topic}': ${message.toString()}`
-    );
+    console.log(`Message from topic '${topic}': ${message.toString()}`);
 
     try {
-      const boardInfo = JSON.parse(message);
-      const collection = dbClient.db(DATABASE_NAME).collection(COLLECTION_NAME);
-      await collection.insertOne(boardInfo);
-      console.log("Board registrada en MongoDB:", boardInfo);
+      const { name, ip, parameters } = JSON.parse(message);
+
+      const result = await Board.findOneAndUpdate(
+        { name },
+        {
+          $set: {
+            name,
+            ip,
+            parameters: new Map(Object.entries(parameters)),
+          },
+        },
+        {
+          upsert: true,
+          new: true,
+        }
+      );
+
+      console.log("Updated board in MongoDB:", result);
     } catch (error) {
-      console.error("Error guardando board en MongoDB:", error);
+      console.error("Error while processing message from topic:", error);
     }
   });
 
   client.on("error", (error) => {
-    console.error("Error de conexión MQTT:", error);
+    console.error("MQTT connection error:", error);
   });
 };
 
