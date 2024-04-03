@@ -6,7 +6,6 @@ const getBoards = async (req, res) => {
   try {
     const boards = await Board.find().exec();
     res.status(200).send(boards);
-    console.log(accounts);
   } catch (err) {
     res.status(500).send(err);
   }

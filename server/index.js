@@ -3,7 +3,7 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const board = require("./src/routes/board.js");
 const connectDB = require("./src/config/db.js");
-const connectMQTT = require("./mqttClient");
+const connectMQTT = require("./src/config/mqtt.js");
 
 const app = express();
 const PORT = process.env.PORT || 8080;
