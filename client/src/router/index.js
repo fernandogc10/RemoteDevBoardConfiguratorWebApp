@@ -1,18 +1,18 @@
 import { createRouter, createWebHistory } from "vue-router";
 
 import Dashboard from "../components/Dashboard.vue";
-import QueryLog from "../components/Log.vue";
+import Log from "../components/Log.vue";
 
 const routes = [
   {
-    path: "/",
+    path: "/dashboard",
     name: "Dashboard",
     component: Dashboard,
   },
   {
     path: "/log",
     name: "Log",
-    component: QueryLog,
+    component: Log,
   },
 ];
 

@@ -1,102 +1,49 @@
 <template>
-    <div class="navbar">
-      <div class="navbar-logo">Remote Dev Board Controller</div>
-      <div class="navbar-links">
-        <router-link to="/" class="nav-link">Dashboard</router-link>
-        <router-link to="/query-log" class="nav-link">Query Log</router-link>
-      </div>
+  <nav class="top-nav">
+    <div class="nav-links">
+      <router-link to="/dashboard" class="nav-item" exact>Dashboard</router-link>
+      <router-link to="/log" class="nav-item" exact>Log</router-link>
     </div>
-  </template>
-  
-  <script>
-  export default {
-    name: 'Navbar',
-  };
-  </script>
-  
-  <style scoped>
-  .navbar {
-    background-color: #333;
-    color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 20px;
-    box-sizing: border-box;
-  }
-  
-  .navbar-logo {
-    font-weight: bold;
-  }
-  
-  .navbar-links {
-    display: flex;
-  }
-  
-  .nav-link {
-    color: #fff;
-    text-decoration: none;
-    margin-left: 16px;
-    padding: 20px 0;
-}
+  </nav>
+</template>
+
+<script>
+export default {
+  name: 'Navbar',
+};
+</script>
+
 <style scoped>
-.navbar {
-    background-color: #333;
-    color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 20px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+.top-nav {
+  width: 100%;
+  background-color: #333; /* Color de fondo oscuro */
+  height: 50px;
+  display: flex;
+  justify-content: center; /* Centra los elementos de navegación */
 }
 
-.navbar-logo {
-    font-weight: bold;
-    font-size: 1.2rem;
+.nav-links {
+  display: flex;
+  align-items: center;
 }
 
-.navbar-links {
-    display: flex;
-    align-items: center;
+.nav-item {
+  color: white;
+  text-decoration: none;
+  margin: 0 1rem;
+  padding: 0.5rem 1rem;
+  border-bottom: 3px solid transparent; /* Borde transparente por defecto */
+  transition: color 0.3s, border-bottom 0.3s;
 }
 
-.nav-link {
-    color: #fff;
-    text-decoration: none;
-    margin-left: 16px;
-    padding: 10px 20px;
-    border-radius: 4px;
-    transition: background-color 0.3s;
+.router-link-exact-active {
+  border-bottom: 3px solid white; /* Borde blanco para el elemento activo */
+  padding-bottom: calc(0.5rem - 3px); /* Ajusta el relleno para que el borde no aumente el tamaño del elemento */
 }
 
-.nav-link:hover {
-    background-color: #555;
+/* Ajuste para que el borde no afecte el tamaño del elemento */
+.nav-item {
+  padding-bottom: calc(0.5rem - 3px); /* Ajusta el relleno para que sea el original menos el borde */
 }
 
-.nav-link.active {
-    font-weight: bold;
-    background-color: #555;
-}
-
-@media (max-width: 768px) {
-    .navbar {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .navbar-logo {
-        margin-bottom: 10px;
-    }
-
-    .navbar-links {
-        margin-top: 10px;
-    }
-
-    .nav-link {
-        margin: 0;
-        margin-top: 8px;
-    }
-}
 </style>
-
-  

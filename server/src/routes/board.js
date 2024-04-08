@@ -7,6 +7,8 @@ router.post("/", board_controller.saveBoard);
 
 router.get("/", board_controller.getBoards);
 
+router.get("/:id", board_controller.getBoardById);
+
 router.patch("/update", board_controller.updateBoardParameters);
 
 module.exports = router;
