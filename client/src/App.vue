@@ -26,13 +26,14 @@ html, body, #app {
   height: 100%;
   width: 100%; 
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #d8e0e7;
 }
 
 
 
 .content {
   width: calc(100% - 20px);
-  height: calc(100% - 10px);
+  height: calc(100% - 100px);
 }
 
 

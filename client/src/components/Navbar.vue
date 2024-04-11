@@ -16,7 +16,7 @@ export default {
 <style scoped>
 .top-nav {
   width: 100%;
-  background-color: #333; /* Color de fondo oscuro */
+  background-color: #242a30; /* Color de fondo oscuro */
   height: 50px;
   display: flex;
   justify-content: center; /* Centra los elementos de navegación */

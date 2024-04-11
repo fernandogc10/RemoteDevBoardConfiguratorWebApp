@@ -1,9 +1,50 @@
 <template>
   <div class="container">
-    <!-- Sección de la tabla -->
+    <div class="top-container">
+
+      <div class="stats">
+
+        <div class="top-stats">
+        <div class="stat-item sign-ins">
+          <div class="stat-value">{{ filteredBoards.length}}</div>
+          <div class="stat-label">Dispositivos</div>
+        </div>
+
+        <div class="stat-item organizations">
+        <div class="stat-value">0</div>
+        <div class="stat-label">Errores</div>
+      </div>
+
+    </div>
+
+    <div class="bottom-stats">
+
+      <div class="stat-item sites">
+        <div class="stat-value">50%</div>
+        <div class="stat-label">Uso de Memoria</div>
+      </div>
+
+      <div class="stat-item visitors">
+        <div class="stat-value">10%</div>
+        <div class="stat-label">Uso de CPU</div>
+      </div>
+    </div>
+      </div>
+      
+      <div class="section2">
+      <h2>Logs</h2>
+      <LogComponent :boards="boards" />
+    </div>
+    </div>
+
+      
+    
+    <div class="bottom-container">
+      <!-- Sección de los logs -->
+    
     <div class="section1">
-      <h2>Tabla de Placas</h2>
-      <input type="text" v-model="filter" placeholder="Filtrar..." class="filter-input">
+      <h2>Dispositivos</h2>
+        <input type="text" v-model="filter" placeholder="Filtrar..." class="filter-input">
       <table class="table">
         <thead>
           <tr>
@@ -33,26 +74,9 @@
         </select>
       </div>
     </div>
-
-    <!-- Sección de los logs -->
-    <div class="section2">
-      <h2>Logs de Placas</h2>
-      <LogComponent :boards="boards" />
     </div>
+    
 
-    <!-- Modal -->
-    <div class="modal" v-if="showModal">
-      <div class="modal-content">
-        <span class="close" @click="closeModal">&times;</span>
-        <h3>Editar Placa</h3>
-        <form @submit.prevent="submitForm">
-          <!-- Aquí tus campos de edición -->
-          <input type="text" v-model="currentBoard.Ip">
-          <input type="text" v-model="currentBoard.Device">
-          <button type="submit">Guardar Cambios</button>
-        </form>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -119,37 +143,62 @@ export default {
 .container {
   display: flex;
   justify-content: space-around;
+  flex-direction: column;
   align-items: flex-start;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   margin: 20px;
   margin-top: 40px;
 }
 
+.top-container {
+
+  display: flex;
+  align-self: flex-start;
+  width: 100%;
+  align-items: center;
+}
+
+.bottom-container {
+
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+}
+
 .section1 {
-  flex: 1;
-  margin: 20px;
+  background-color: white;
+  border-radius: 10px;
+  padding: 20px;
+  width: 60%;
+
 }
 
 .section1 h2 {
   margin-bottom: 10px;
+  font-size: large;
 }
 
 .section2 {
-  flex: 1;
-  margin: 20px;
+  background-color: white;
+  border-radius:  10px;
+  padding: 20px;
+  width: 55%;
+  margin-left: auto;
 }
 
 .section2 h2 {
   margin-bottom: 10px;
+  font-size: large;
 }
+
 
 .filter-input {
   padding: 8px;
   margin-bottom: 10px;
   width: 100%;
   box-sizing: border-box;
-  border: 2px solid #ccc;
-  border-radius: 4px;
+  border-bottom: 2px solid #ccc;
 }
 
 .entries-per-page {
@@ -182,9 +231,10 @@ export default {
 }
 
 .table th {
-  background-color: #ddd; /* Color gris para los encabezados */
-  color: black;
+  background-color: #242a30; /* Color gris para los encabezados */
+  color: white;
 }
+
 
 .table tr:nth-child(even) {
   background-color: #f2f2f2;
@@ -200,39 +250,48 @@ export default {
   cursor: pointer;
 }
 
+
+.stats {
+  width: 40%;
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  justify-content: space-between;
+  margin-left: 40px;
+}
+
+.top-stats,
+.bottom-stats {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  justify-content: center;
+}
 /* Estilos del modal */
-.modal {
-  display: none;
-  position: fixed;
-  z-index: 1;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  overflow: auto;
-  background-color: rgb(0,0,0);
-  background-color: rgba(0,0,0,0.4);
-}
 
-.modal-content {
-  background-color: #fefefe;
-  margin: 20% auto;
+.stat-item {
+  background: #ccc;
+  color: white;
+  border-radius: 8px;
   padding: 20px;
-  border: 1px solid #888;
-  width: 50%;
+  text-align: center;
+  width: 40%;
+  margin-right: 30px;
 }
 
-.close {
-  color: #aaaaaa;
-  float: right;
-  font-size: 28px;
+.organizations { background-color: #e75a5a; }
+.visitors { background-color: #5785e0; }
+.sign-ins { background-color: #4d4d4d; }
+.sites { background-color: #26b5b5;}
+
+
+.stat-value {
+  font-size: 3em;
   font-weight: bold;
 }
 
-.close:hover,
-.close:focus {
-  color: #000;
-  text-decoration: none;
-  cursor: pointer;
+.stat-label {
+  margin-top: 10px;
+  font-size: 1.2em;
 }
 </style>
