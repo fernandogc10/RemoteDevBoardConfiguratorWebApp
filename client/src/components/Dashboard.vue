@@ -1,48 +1,54 @@
 <template>
   <div class="container">
-    <input type="text" v-model="filter" placeholder="Filtrar..." class="filter-input">
-
-    <table class="table">
-      <thead>
-        <tr>
-          <th>Id</th>
-          <th>IP</th>
-          <th>Nombre</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="(board, index) in filteredBoards" :key="board.id">
-          <td>{{ index + 1 }}</td>
-          <td>{{ board.ip }}</td>
-          <td>{{ board.name }}</td>
-          <td>
-            <button class="edit-button" @click="openModal(board)">
-              <font-awesome-icon icon="pencil-alt" />
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
-    <div class="entries-per-page">
-      <label for="entries">Entries per page:</label>
-      <select id="entries">
-        <option value="10">10</option>
-        <option value="20">20</option>
-        <option value="50">50</option>
-      </select>
+    <!-- Sección de la tabla -->
+    <div class="section1">
+      <h2>Tabla de Placas</h2>
+      <input type="text" v-model="filter" placeholder="Filtrar..." class="filter-input">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Id</th>
+            <th>IP</th>
+            <th>Nombre</th>
+            <th>Configuración</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="(board, index) in filteredBoards" :key="board.id">
+            <td>{{ index + 1 }}</td>
+            <td>{{ board.Ip }}</td>
+            <td>{{ board.Device }}</td>
+            <td>
+              <i class="fas fa-edit" @click="openModal(board)"></i>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="entries-per-page">
+        <label for="entries">Entradas por página:</label>
+        <select id="entries" v-model="entriesPerPage">
+          <option value="10">10</option>
+          <option value="20">20</option>
+          <option value="50">50</option>
+        </select>
+      </div>
     </div>
 
-    <div v-if="showModal" class="modal">
+    <!-- Sección de los logs -->
+    <div class="section2">
+      <h2>Logs de Placas</h2>
+      <LogComponent :boards="boards" />
+    </div>
+
+    <!-- Modal -->
+    <div class="modal" v-if="showModal">
       <div class="modal-content">
-        <span class="close" @click="closeModal()">&times;</span>
+        <span class="close" @click="closeModal">&times;</span>
         <h3>Editar Placa</h3>
         <form @submit.prevent="submitForm">
-          <div class="form-group" v-for="(value, key) in currentBoard.parameters" :key="key">
-            <label :for="key">{{ key }}</label>
-            <input :id="key" type="text" :value="value" @input="updateParameters(key, $event.target.value)">
-          </div>
+          <!-- Aquí tus campos de edición -->
+          <input type="text" v-model="currentBoard.Ip">
+          <input type="text" v-model="currentBoard.Device">
           <button type="submit">Guardar Cambios</button>
         </form>
       </div>
@@ -52,18 +58,20 @@
 
 <script>
 import axios from 'axios';
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import '@fortawesome/fontawesome-free/css/all.css';
+import LogComponent from './Log.vue'; // Asegúrate de importar correctamente el componente de logs
 
 export default {
   components: {
-    FontAwesomeIcon
+    LogComponent
   },
   data() {
     return {
       boards: [],
       filter: '',
       showModal: false,
-      currentBoard: null
+      currentBoard: null,
+      entriesPerPage: 10 // Número de entradas por página por defecto
     };
   },
   computed: {
@@ -71,6 +79,11 @@ export default {
       return this.boards.filter(board => {
         return Object.values(board).join(' ').toLowerCase().includes(this.filter.toLowerCase());
       });
+    },
+    paginatedBoards() {
+      // Devuelve las placas según el número de entradas por página
+      const startIndex = (this.currentPage - 1) * this.entriesPerPage;
+      return this.filteredBoards.slice(startIndex, startIndex + this.entriesPerPage);
     }
   },
   methods: {
@@ -84,14 +97,11 @@ export default {
         });
     },
     openModal(board) {
-      this.currentBoard = { ...board, parameters: {...board.parameters} };
+      this.currentBoard = board;
       this.showModal = true;
     },
     closeModal() {
       this.showModal = false;
-    },
-    updateParameters(key, value) {
-      this.$set(this.currentBoard.parameters, key, value);
     },
     submitForm() {
       console.log('Saving changes', this.currentBoard);
@@ -107,8 +117,30 @@ export default {
 
 <style scoped>
 .container {
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-start;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   margin: 20px;
+  margin-top: 40px;
+}
+
+.section1 {
+  flex: 1;
+  margin: 20px;
+}
+
+.section1 h2 {
+  margin-bottom: 10px;
+}
+
+.section2 {
+  flex: 1;
+  margin: 20px;
+}
+
+.section2 h2 {
+  margin-bottom: 10px;
 }
 
 .filter-input {
@@ -116,6 +148,23 @@ export default {
   margin-bottom: 10px;
   width: 100%;
   box-sizing: border-box;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+}
+
+.entries-per-page {
+  display: flex;
+  align-items: center;
+}
+
+.entries-per-page label {
+  margin-top: 20px;
+  margin-right: 5px;
+}
+
+.entries-per-page select {
+  padding: 8px;
+  margin-top: 20px;
   border: 2px solid #ccc;
   border-radius: 4px;
 }
@@ -128,7 +177,7 @@ export default {
 
 .table th, .table td {
   padding: 12px 15px;
-  text-align: left;
+  text-align: center;
   border-bottom: 1px solid #ddd;
 }
 
@@ -151,12 +200,9 @@ export default {
   cursor: pointer;
 }
 
-.fa-pencil-alt {
-  color: #4CAF50;
-}
-
+/* Estilos del modal */
 .modal {
-  display: block;
+  display: none;
   position: fixed;
   z-index: 1;
   left: 0;
@@ -164,60 +210,29 @@ export default {
   width: 100%;
   height: 100%;
   overflow: auto;
+  background-color: rgb(0,0,0);
   background-color: rgba(0,0,0,0.4);
 }
 
 .modal-content {
   background-color: #fefefe;
-  margin: 15% auto;
+  margin: 20% auto;
   padding: 20px;
   border: 1px solid #888;
-  width: 80%;
+  width: 50%;
 }
 
 .close {
-  color: #aaa;
+  color: #aaaaaa;
   float: right;
   font-size: 28px;
   font-weight: bold;
 }
 
-.close:hover, .close:focus {
-  color: black;
+.close:hover,
+.close:focus {
+  color: #000;
   text-decoration: none;
   cursor: pointer;
-}
-
-.form-group {
-  margin-bottom: 10px;
-}
-
-.form-group label {
-  display: block;
-}
-
-.form-group input {
-  width: 100%;
-  padding: 8px;
-  margin: 6px 0;
-  display: inline-block;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-sizing: border-box;
-}
-
-button[type="submit"] {
-  width: 100%;
-  background-color: #4CAF50;
-  color: white;
-  padding: 14px 20px;
-  margin: 8px 0;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-button[type="submit"]:hover {
-  background-color: #45a049;
 }
 </style>

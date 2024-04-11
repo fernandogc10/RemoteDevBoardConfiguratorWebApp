@@ -1,17 +1,23 @@
 const mqtt = require("mqtt");
 
-const MQTT_TOPIC = "boards/registry";
+const BOARDS_TOPIC = "boards/registry";
 const DATABASE_NAME = "rdbc_db";
 const COLLECTION_NAME = "boards";
+const Board = require("../models/board.js");
+const LogMessage = require("../models/message.js");
 
 const connectMQTT = (dbClient) => {
-  const client = mqtt.connect("mqtt://localhost:1883");
+  const options = {
+    username: "tester",
+    password: "1234",
+  };
+  const client = mqtt.connect("mqtt://localhost:1883", options);
 
   client.on("connect", () => {
     console.log("Connected to MQTT server");
-    client.subscribe(MQTT_TOPIC, (err) => {
+    client.subscribe(BOARDS_TOPIC, (err) => {
       if (!err) {
-        console.log(`Suscription to topic '${MQTT_TOPIC}' done`);
+        console.log(`Suscription to topic '${BOARDS_TOPIC}' done`);
       }
     });
   });
@@ -30,7 +36,7 @@ const connectMQTT = (dbClient) => {
             `Log message from board '${boardName}': ${message.toString()}`
           );
           // Guardar el mensaje de log en MongoDB
-          const board = await Board.findOne({ name: boardName });
+          const board = await Board.findOne({ Device: boardName });
           if (board) {
             const newLogMessage = new LogMessage({
               board: board._id,
@@ -43,14 +49,14 @@ const connectMQTT = (dbClient) => {
           }
         } else if (topicParts.length === 2 && topicParts[1] === "registry") {
           // Mensaje de registro
-          const { name, ip, parameters } = JSON.parse(message);
+          const { Device, Ip, parameters } = JSON.parse(message);
 
           const result = await Board.findOneAndUpdate(
-            { name },
+            { Device },
             {
               $set: {
-                name,
-                ip,
+                Device,
+                Ip,
                 parameters: new Map(Object.entries(parameters)),
               },
             },
@@ -63,11 +69,11 @@ const connectMQTT = (dbClient) => {
           console.log("Updated board in MongoDB:", result);
 
           // Suscribirse al tema boards/nombre_de_la_placa/log
-          client.subscribe(`boards/${name}/log`, (err) => {
+          client.subscribe(`boards/${Device}/log`, (err) => {
             if (err) {
               console.error("Error while subscribing to log topic:", err);
             } else {
-              console.log(`Subscribed to topic boards/${name}/log`);
+              console.log(`Subscribed to topic boards/${Device}/log`);
             }
           });
         }

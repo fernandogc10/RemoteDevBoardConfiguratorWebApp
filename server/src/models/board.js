@@ -2,8 +2,8 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const boardSchema = new Schema({
-  name: { type: String, required: true },
-  ip: { type: String, required: true },
+  Device: { type: String, required: true },
+  Ip: { type: String, required: true },
   parameters: {
     type: Map,
     of: String,
