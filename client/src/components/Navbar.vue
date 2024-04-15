@@ -2,7 +2,7 @@
   <nav class="top-nav">
     <div class="nav-links">
       <router-link to="/dashboard" class="nav-item" exact>Dashboard</router-link>
-      <router-link to="/log" class="nav-item" exact>Log</router-link>
+      <router-link to="/log" class="nav-item" exact>Documentación</router-link>
     </div>
   </nav>
 </template>

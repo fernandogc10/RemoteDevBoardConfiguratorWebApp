@@ -9,11 +9,6 @@ const routes = [
     name: "Dashboard",
     component: Dashboard,
   },
-  {
-    path: "/log",
-    name: "Log",
-    component: Log,
-  },
 ];
 
 const router = createRouter({

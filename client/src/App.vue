@@ -32,8 +32,8 @@ html, body, #app {
 
 
 .content {
-  width: calc(100% - 20px);
-  height: calc(100% - 100px);
+  height: 100%;
+  width: 100%;
 }
 
 
