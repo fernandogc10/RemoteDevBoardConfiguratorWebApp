@@ -73,6 +73,10 @@
       </v-dialog>
       
     </v-card>
+
+    <v-snackbar v-model="snackbar.show" :color="snackbar.color" :timeout="snackbar.timeout">
+      {{ snackbar.text }}
+    </v-snackbar>
     
     
   </div>
@@ -93,6 +97,12 @@ export default {
       editedDevice: null,
       entriesPerPage: 5,
       loading: false,
+      snackbar: {
+      show: false,
+      text: '',
+      color: '',
+      timeout: 3000
+    },
       headers: [
         { key: 'Device', title: 'Dispositivo' },
         { key: 'Ip', title: 'Ip' },
@@ -147,16 +157,24 @@ export default {
   axios.patch(`http://localhost:8080/boards/${this.editedDevice._id}/update`, this.editedDevice)
     .then(response => {
       console.log('Datos actualizados:', response.data);
+      this.showSnackbar('¡Cambios guardados con éxito!', 'success');
+      this.closeModal();
     })
     .catch(error => {
       console.error('Error al actualizar los datos:', error);
+      this.showSnackbar('Error al guardar los cambios. Por favor, inténtalo de nuevo.', 'error');
     })
     .finally(() => {
       console.log("Desactivando loading");
       this.loading = false;
       console.log("Estado de loading desactivado:", this.loading);
     });
-},
+    },
+    showSnackbar(text, color) {
+    this.snackbar.text = text;
+    this.snackbar.color = color;
+    this.snackbar.show = true;
+  },
 
     isNumber(value) {
       return /^\d+(\.\d+)?$/.test(value);

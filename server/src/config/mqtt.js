@@ -83,11 +83,14 @@ const connectMQTT = (dbClient) => {
             }
           });
 
-          client.subscribe(`boards/${Device}`, (err) => {
+          client.subscribe(`boards/${Device}/confirmation`, (err) => {
             if (err) {
-              console.error("Error while subscribing to log topic:", err);
+              console.error(
+                "Error while subscribing to confirmation topic:",
+                err
+              );
             } else {
-              console.log(`Subscribed to topic boards/${Device}`);
+              console.log(`Subscribed to topic boards/${Device}/confirmation`);
             }
           });
         } else {
@@ -118,6 +121,8 @@ const connectMQTT = (dbClient) => {
     return new Promise((resolve, reject) => {
       const id = Math.random().toString(36).substring(2, 15);
       data.id = id;
+      console.log("boardName: ", boardName);
+      console.log("ID: ", data.id);
       client.publish(`boards/${boardName}`, JSON.stringify(data), {}, (err) => {
         if (err) {
           reject(err);

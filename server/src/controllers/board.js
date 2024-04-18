@@ -52,12 +52,9 @@ const updateBoardParameters = async (req, res) => {
   const Device = req.body.Device;
 
   try {
-    const confirmed = await req.mqttClient.publishWithConfirmation(
-      `boards/${Device}`,
-      {
-        parameters: newParameters,
-      }
-    );
+    const confirmed = await req.mqttClient.publishWithConfirmation(Device, {
+      parameters: newParameters,
+    });
 
     if (confirmed) {
       const updatedBoard = await Board.findOneAndUpdate(
