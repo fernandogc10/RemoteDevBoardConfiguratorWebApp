@@ -14,36 +14,67 @@
       </template>
 
       <v-data-table :headers="headers" :items="filteredBoards" :items-per-page="5" class="data-table-component">
-        <template v-slot:item.action="{ item }">
-          <v-icon @click="openModal(item)">mdi-pencil</v-icon>
-        </template>
+        <template v-slot:item.Status="{ item }">
+    <v-chip
+      :color="item.Status === 'active' ? 'green' : 'red'"
+      :text="item.Status === 'active' ? 'Activo' : 'Inactivo'"
+      class="text-uppercase"
+      size="small"
+      label
+    ></v-chip>
+  </template>
+  <template v-slot:item.action="{ item }">
+    <v-icon @click="openModal(item)">mdi-file-edit</v-icon>
+  </template>
       </v-data-table>
 
       <!-- Diálogo de edición -->
       <v-dialog v-model="showModal" max-width="600">
+        
         <v-card>
-          <v-card-title>Configurar Dispositivo</v-card-title>
+          <v-card-title>Configurar {{editedDevice.Device}}</v-card-title>
           <v-card-text>
             <v-form ref="editForm">
-              <v-text-field v-model="editedDevice.Device" label="Dispositivo" readonly=""</v-text-field>
-              <v-text-field v-model="editedDevice.Ip" label="IP" required readonly=""</v-text-field>
+              <v-text-field variant="outlined" v-model="editedDevice.Device" label="Dispositivo" readonly=""</v-text-field>
+              <v-text-field variant="outlined" v-model="editedDevice.Ip" label="IP" required readonly=""</v-text-field>
               
               <!-- Crear campos de entrada para cada parámetro -->
               <v-row v-for="(value, key) in editedDevice.parameters" :key="key">
-                <v-col cols="6">
-                  <v-text-field v-model="editedDevice.parameters[key]" :label="key"></v-text-field>
+                <v-col cols="100" >
+                  <template v-if="isBoolean(value)">
+                    <v-autocomplete variant="outlined" :label="key"  v-model="editedDevice.parameters[key]" :items="['true', 'false']"/>
+                </template>
+                <template v-else-if="isNumber(value)">
+                  <v-text-field variant="outlined" v-model="editedDevice.parameters[key]" :label="key" type="number"></v-text-field>
+                </template>
+                <template v-else>
+                  <v-text-field variant="outlined" v-model="editedDevice.parameters[key]" :label="key" :rules="getValidationRules(value)"></v-text-field>
+                </template>
                 </v-col>
               </v-row>
               
             </v-form>
           </v-card-text>
           <v-card-actions class="modal-buttons">
-            <v-btn color="primary" variant="tonal" @click="saveChanges">Guardar</v-btn>
+            <v-btn color="primary" variant="tonal" @click="saveChanges" >Guardar</v-btn>
+            <v-overlay v-model="overlay" class="align-center justify-center" :model-value="this.loading">
+          <v-progress-circular
+            color="primary"
+            indeterminate
+            :size="76"
+            :width="9"
+        ></v-progress-circular>
+    </v-overlay>
             <v-btn variant="plain" @click="closeModal">Cancelar</v-btn>
           </v-card-actions>
         </v-card>
+
+       
       </v-dialog>
+      
     </v-card>
+    
+    
   </div>
 </template>
 
@@ -57,14 +88,16 @@ export default {
       boards: [],
       search: '',
       showModal: false,
+      formIsValid: false,
       currentBoard: null,
       editedDevice: null,
       entriesPerPage: 5,
+      loading: false,
       headers: [
-        { text: 'Dispositivo', value: 'Device' },
-        { text: 'IP', value: 'Ip' },
-        { text: 'Parámetros', value: 'parameters' },
-        { text: 'Acción', value: 'action', sortable: false }
+        { key: 'Device', title: 'Dispositivo' },
+        { key: 'Ip', title: 'Ip' },
+        { key: 'Status', title: 'Estado' },
+        { key: 'action', title: 'Configuración', sortable: false }
       ]
     };
   },
@@ -77,6 +110,15 @@ export default {
           Object.values(board.parameters).join(' ').toLowerCase().includes(this.search.toLowerCase())
         );
       });
+    },
+    formIsValid() {
+      let isValid = true;
+      Object.values(this.$refs.editForm.fields).forEach(field => {
+        if (!field.valid) {
+          isValid = false;
+        }
+      });
+      return isValid;
     }
   },
   methods: {
@@ -91,21 +133,51 @@ export default {
     },
     openModal(item) {
       this.currentBoard = item;
-      this.editedDevice = { ...item }; // Clonar el objeto para edición
+      this.editedDevice = { ...item };
       this.showModal = true;
     },
     closeModal() {
       this.showModal = false;
     },
     saveChanges() {
-      // Validar el formulario antes de guardar
-      this.$refs.editForm.validate().then(valid => {
-        if (valid) {
-          console.log('Guardando cambios', this.editedDevice);
-          // Aquí deberías enviar los datos actualizados a la API
-          this.closeModal();
-        }
-      });
+  console.log("Activando loading, estado previo:", this.loading);
+  this.loading = true;
+  console.log("Estado de loading activado:", this.loading);
+
+  axios.patch(`http://localhost:8080/boards/${this.editedDevice._id}/update`, this.editedDevice)
+    .then(response => {
+      console.log('Datos actualizados:', response.data);
+    })
+    .catch(error => {
+      console.error('Error al actualizar los datos:', error);
+    })
+    .finally(() => {
+      console.log("Desactivando loading");
+      this.loading = false;
+      console.log("Estado de loading desactivado:", this.loading);
+    });
+},
+
+    isNumber(value) {
+      return /^\d+(\.\d+)?$/.test(value);
+    },
+
+    isBoolean(value) {
+      return value === 'true' || value === 'false';
+    },
+    getValidationRules() {
+      return [
+        v => !!v || 'Campo requerido',
+        v => this.isTextValid(v) || 'No se permiten números'
+      ];
+    },
+
+    isTextValid(value) {
+      return /^\D+$/.test(value);
+    },
+
+    containsNumbers() {
+      return Object.values(this.editedDevice.parameters).some(value => /^\d/.test(value));
     }
   },
   mounted() {
@@ -143,4 +215,14 @@ export default {
 .modal-buttons {
   margin-left: auto;
 }
+
+.loading-spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+
+
 </style>

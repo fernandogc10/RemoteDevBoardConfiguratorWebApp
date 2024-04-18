@@ -1,10 +1,13 @@
 const mqtt = require("mqtt");
+const schedule = require("node-schedule");
 
 const BOARDS_TOPIC = "boards/registry";
 const DATABASE_NAME = "rdbc_db";
 const COLLECTION_NAME = "boards";
 const Board = require("../models/board.js");
 const LogMessage = require("../models/message.js");
+
+const pendingConfirmations = new Map();
 
 const connectMQTT = (dbClient) => {
   const options = {
@@ -28,14 +31,12 @@ const connectMQTT = (dbClient) => {
     try {
       if (topic.startsWith("boards/")) {
         const topicParts = topic.split("/");
-        const boardName = topicParts[1]; // Extrayendo el nombre de la placa del tema
+        const boardName = topicParts[1];
 
         if (topicParts.length === 3 && topicParts[2] === "log") {
-          // Mensaje de log
           console.log(
             `Log message from board '${boardName}': ${message.toString()}`
           );
-          // Guardar el mensaje de log en MongoDB
           const board = await Board.findOne({ Device: boardName });
           if (board) {
             const newLogMessage = new LogMessage({
@@ -48,8 +49,13 @@ const connectMQTT = (dbClient) => {
             console.error(`Board '${boardName}' not found`);
           }
         } else if (topicParts.length === 2 && topicParts[1] === "registry") {
-          // Mensaje de registro
-          const { Device, Ip, parameters } = JSON.parse(message);
+          const { Device, Ip, parameters } = JSON.parse(message.toString());
+
+          const stringParameters = parameters.reduce((acc, item) => {
+            const key = Object.keys(item)[0];
+            acc[key] = String(item[key]);
+            return acc;
+          }, {});
 
           const result = await Board.findOneAndUpdate(
             { Device },
@@ -57,7 +63,8 @@ const connectMQTT = (dbClient) => {
               $set: {
                 Device,
                 Ip,
-                parameters: new Map(Object.entries(parameters)),
+                Status: "active",
+                parameters: stringParameters,
               },
             },
             {
@@ -68,7 +75,6 @@ const connectMQTT = (dbClient) => {
 
           console.log("Updated board in MongoDB:", result);
 
-          // Suscribirse al tema boards/nombre_de_la_placa/log
           client.subscribe(`boards/${Device}/log`, (err) => {
             if (err) {
               console.error("Error while subscribing to log topic:", err);
@@ -76,6 +82,31 @@ const connectMQTT = (dbClient) => {
               console.log(`Subscribed to topic boards/${Device}/log`);
             }
           });
+
+          client.subscribe(`boards/${Device}`, (err) => {
+            if (err) {
+              console.error("Error while subscribing to log topic:", err);
+            } else {
+              console.log(`Subscribed to topic boards/${Device}`);
+            }
+          });
+        } else {
+          const msg = JSON.parse(message.toString());
+          if (msg.id && pendingConfirmations.has(msg.id)) {
+            const resolve = pendingConfirmations.get(msg.id);
+            resolve(msg.status === "updated");
+            pendingConfirmations.delete(msg.id);
+          } else {
+            const boardName = msg.Device;
+            console.log("Active message received");
+            updateStatus(boardName, "active");
+
+            if (msg.status === "active") {
+              schedule.scheduleJob("*/1 * * * *", () => {
+                updateStatus(boardName, "inactive");
+              });
+            }
+          }
         }
       }
     } catch (error) {
@@ -83,9 +114,52 @@ const connectMQTT = (dbClient) => {
     }
   });
 
+  function publishWithConfirmation(boardName, data) {
+    return new Promise((resolve, reject) => {
+      const id = Math.random().toString(36).substring(2, 15);
+      data.id = id;
+      client.publish(`boards/${boardName}`, JSON.stringify(data), {}, (err) => {
+        if (err) {
+          reject(err);
+        } else {
+          pendingConfirmations.set(id, resolve);
+          console.log("Timeout");
+          setTimeout(() => {
+            if (pendingConfirmations.has(id)) {
+              pendingConfirmations.delete(id);
+              resolve(false);
+            }
+          }, 10000);
+        }
+      });
+    });
+  }
+
+  async function updateStatus(boardName, status) {
+    try {
+      const updatedBoard = await Board.findOneAndUpdate(
+        { Device: boardName },
+        { Status: status },
+        { new: true }
+      );
+
+      if (updatedBoard) {
+        console.log(`Status of board '${boardName}' updated to '${status}'`);
+      } else {
+        console.log(`Board '${boardName}' not found`);
+      }
+    } catch (error) {
+      console.error(`Error updating status of board '${boardName}':`, error);
+    }
+  }
+
   client.on("error", (error) => {
     console.error("MQTT connection error:", error);
   });
+
+  return {
+    publishWithConfirmation,
+  };
 };
 
 module.exports = connectMQTT;

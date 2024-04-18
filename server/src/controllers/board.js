@@ -1,5 +1,6 @@
 const Board = require("../models/board");
 const LogMessage = require("../models/message");
+const { publishWithConfirmation } = require("../config/mqtt.js");
 
 const getBoards = async (req, res) => {
   console.log("getBoards");
@@ -46,25 +47,36 @@ const saveBoard = async (req, res) => {
 };
 
 const updateBoardParameters = async (req, res) => {
-  const { name } = req.params;
+  console.log(req.body);
   const newParameters = req.body.parameters;
+  const Device = req.body.Device;
 
   try {
-    const updatedBoard = await Board.findOneAndUpdate(
-      { name },
-      { $set: { parameters: new Map(Object.entries(newParameters)) } },
-      { new: true, returnDocument: "after" }
+    const confirmed = await req.mqttClient.publishWithConfirmation(
+      `boards/${Device}`,
+      {
+        parameters: newParameters,
+      }
     );
 
-    if (updatedBoard) {
-      client.publish(`boards/${name}`, JSON.stringify(newParameters));
-      res.status(200).json(updatedBoard);
+    if (confirmed) {
+      const updatedBoard = await Board.findOneAndUpdate(
+        { Device },
+        { $set: { parameters: newParameters } },
+        { new: true, returnDocument: "after" }
+      );
+
+      if (updatedBoard) {
+        res.status(200).json(updatedBoard);
+      } else {
+        res.status(404).send("Board not found");
+      }
     } else {
-      res.status(404).send("Board not found");
+      res.status(503).send("Failed to update board parameters via MQTT");
     }
   } catch (err) {
     console.error(err);
-    res.status(500).send(err);
+    res.status(500).send(err.message);
   }
 };
 

@@ -11,13 +11,20 @@ const PORT = process.env.PORT || 8080;
 app.use(cors());
 app.use(bodyParser.json());
 
-app.use("/boards", board);
-
 connectDB()
   .then(() => {
     console.log("Connected to MongoDB");
 
-    connectMQTT();
+    const mqttClient = connectMQTT();
+
+    app.use(
+      "/boards",
+      (req, res, next) => {
+        req.mqttClient = mqttClient;
+        next();
+      },
+      board
+    );
 
     app.listen(PORT, () => console.log(`Server running in port:  ${PORT}`));
   })
