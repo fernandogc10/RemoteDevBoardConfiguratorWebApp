@@ -93,6 +93,13 @@ const connectMQTT = (dbClient) => {
               console.log(`Subscribed to topic boards/${Device}/confirmation`);
             }
           });
+          client.subscribe(`boards/${Device}`, (err) => {
+            if (err) {
+              console.error("Error while subscribing to Device topic:", err);
+            } else {
+              console.log(`Subscribed to topic boards/${Device}`);
+            }
+          });
         } else {
           const msg = JSON.parse(message.toString());
           if (msg.id && pendingConfirmations.has(msg.id)) {
