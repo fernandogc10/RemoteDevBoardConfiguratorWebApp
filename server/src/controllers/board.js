@@ -14,6 +14,23 @@ const getBoards = async (req, res) => {
   }
 };
 
+const deleteBoards = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const Board = await Board.findByIdAndDelete(id);
+
+    if (!Board) {
+      return res.status(404).json({ error: "Board not found" });
+    }
+
+    return res.status(200).json({ message: "Board deleted" });
+  } catch (error) {
+    console.error("Error while deleting board:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 const getBoardById = async (req, res) => {
   const { id } = req.params;
 
@@ -82,4 +99,5 @@ module.exports = {
   getBoards,
   getBoardById,
   updateBoardParameters,
+  deleteBoards,
 };

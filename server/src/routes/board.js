@@ -9,6 +9,8 @@ router.get("/", board_controller.getBoards);
 
 router.get("/:id", board_controller.getBoardById);
 
+router.delete("/:id", board_controller.deleteBoards);
+
 router.patch("/:id/update", board_controller.updateBoardParameters);
 
 module.exports = router;

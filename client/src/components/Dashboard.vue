@@ -13,7 +13,8 @@
         ></v-text-field>
       </template>
 
-      <v-data-table :headers="headers" :items="filteredBoards" :items-per-page="5" class="data-table-component">
+      <v-data-table :headers="headers" :items="filteredBoards" :items-per-page="5" class="data-table-component" show-select v-model="selected" item-value="Device">
+        
         <template v-slot:item.Status="{ item }">
     <v-chip
       :color="item.Status === 'active' ? 'green' : 'red'"
@@ -23,9 +24,14 @@
       label
     ></v-chip>
   </template>
-  <template v-slot:item.action="{ item }">
-    <v-icon @click="openModal(item)">mdi-file-edit</v-icon>
-  </template>
+  <template v-slot:item.action="{ item }" class="buttons-field">
+  <v-btn prepend-icon="mdi-pencil" size="small" :color="isSelected(item.Device) ? '#5db560' : '#25BE25'" class="text-none text-subtitle-1 mr-2" variant="flat" :disabled="!isSelected(item.Device)" @click="openModal(item)">Editar</v-btn>
+  <v-btn prepend-icon="mdi-trash-can" size="small" :color="isSelected(item.Device) ? '#da5453' : '#e38f8f'" class="text-none text-subtitle-1" variant="flat" :disabled="item.Status !== 'inactive' || !isSelected(item.Device)" @click="isSelected(item.Device) && deleteDevice(item)">Eliminar</v-btn>
+</template>
+
+
+
+  
       </v-data-table>
 
       <!-- Diálogo de edición -->
@@ -90,6 +96,7 @@ export default {
   data() {
     return {
       boards: [],
+      selected: [],
       search: '',
       showModal: false,
       formIsValid: false,
@@ -149,6 +156,9 @@ export default {
     closeModal() {
       this.showModal = false;
     },
+    isSelected(device) {
+    return this.selected.includes(device);
+  },
     saveChanges() {
   console.log("Activando loading, estado previo:", this.loading);
   this.loading = true;
@@ -170,6 +180,19 @@ export default {
       console.log("Estado de loading desactivado:", this.loading);
     });
     },
+
+    deleteDevice(item) {
+      const id = item._id;
+      
+      axios.delete(`http://localhost:8080/boards/${id}`)
+        .then(response => {
+          console.log('Placa eliminada con éxito:', response.data);
+        })
+        .catch(error => {
+          console.error('Error al eliminar la placa:', error);
+        });
+    },
+  
     showSnackbar(text, color) {
     this.snackbar.text = text;
     this.snackbar.color = color;
@@ -215,7 +238,7 @@ export default {
 }
 
 .table-component {
-  width: 50%;
+  width: 60%;
   border-top-left-radius: 0px;
   border-top-right-radius: 0px;
   box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.5);
@@ -224,7 +247,7 @@ export default {
 .table-title-component {
   background-color: #242a30;
   color: white;
-  width: 50%;
+  width: 60%;
   border-bottom-left-radius: 0px;
   border-bottom-right-radius: 0px;
   box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.5);
