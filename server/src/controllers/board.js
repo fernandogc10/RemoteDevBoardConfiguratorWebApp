@@ -1,4 +1,4 @@
-const Board = require("../models/board");
+const Board = require("../models/board.js");
 const LogMessage = require("../models/message");
 const { publishWithConfirmation } = require("../config/mqtt.js");
 
@@ -18,9 +18,9 @@ const deleteBoards = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const Board = await Board.findByIdAndDelete(id);
+    const board = await Board.findByIdAndDelete(id);
 
-    if (!Board) {
+    if (!board) {
       return res.status(404).json({ error: "Board not found" });
     }
 

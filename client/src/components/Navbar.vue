@@ -1,8 +1,8 @@
 <template>
   <nav class="top-nav">
     <div class="nav-links">
-      <router-link to="/dashboard" class="nav-item" exact>Dashboard</router-link>
-      <router-link to="/log" class="nav-item" exact>Documentación</router-link>
+      <router-link to="/dashboard" class="nav-item" exact>Dispositivos</router-link>
+      <router-link to="/log" class="nav-item" exact>Registro de Logs</router-link>
     </div>
   </nav>
 </template>
@@ -16,10 +16,10 @@ export default {
 <style scoped>
 .top-nav {
   width: 100%;
-  background-color: #242a30; /* Color de fondo oscuro */
+  background-color: #242a30;
   height: 50px;
   display: flex;
-  justify-content: center; /* Centra los elementos de navegación */
+  justify-content: center;
 }
 
 .nav-links {

@@ -1,8 +1,11 @@
 <template>
   <div class="table-container">
-    <v-card title="Dispositivos" flat class="table-title-component"></v-card>
+    <v-card title="Dispositivos" flat class="table-title-component">
+      <v-icon @click="refreshData" class=" mr-4 ml-auto">mdi-refresh</v-icon>
+    </v-card>
     <v-card flat class="table-component">
       <template v-slot:text>
+        
         <v-text-field
           v-model="search"
           label="Buscar.."
@@ -11,6 +14,7 @@
           hide-details
           single-line
         ></v-text-field>
+        
       </template>
 
       <v-data-table :headers="headers" :items="filteredBoards" :items-per-page="5" class="data-table-component" show-select v-model="selected" item-value="Device">
@@ -24,15 +28,27 @@
       label
     ></v-chip>
   </template>
-  <template v-slot:item.action="{ item }" class="buttons-field">
-  <v-btn prepend-icon="mdi-pencil" size="small" :color="isSelected(item.Device) ? '#5db560' : '#25BE25'" class="text-none text-subtitle-1 mr-2" variant="flat" :disabled="!isSelected(item.Device)" @click="openModal(item)">Editar</v-btn>
-  <v-btn prepend-icon="mdi-trash-can" size="small" :color="isSelected(item.Device) ? '#da5453' : '#e38f8f'" class="text-none text-subtitle-1" variant="flat" :disabled="item.Status !== 'inactive' || !isSelected(item.Device)" @click="isSelected(item.Device) && deleteDevice(item)">Eliminar</v-btn>
-</template>
+  <template v-slot:item.action="{ item }">
+          <v-icon icon="mdi-file-edit" class="mr-1" size="large" :disabled="!isSelected(item.Device)" @click="openModal(item)"></v-icon>
+          <v-icon icon="mdi-trash-can" size="x-large" :disabled="item.Status !== 'inactive' || !isSelected(item.Device)" @click="deleteConfirmation(item)"></v-icon>
+        </template>
 
 
 
   
       </v-data-table>
+
+      <v-dialog v-model="deleteDialog" max-width="550">
+        <v-card>
+          <v-card-title>¿Estás seguro de que quieres eliminar este dispositivo?</v-card-title>
+          <v-card-actions>
+            <v-btn color="error" variant="flat" @click="deleteDevice(selectedItem)">Eliminar</v-btn>
+            <v-btn @click="cancelDelete" variant="tonal">Cancelar</v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+
+      
 
       <!-- Diálogo de edición -->
       <v-dialog v-model="showModal" max-width="600">
@@ -46,7 +62,7 @@
               
               <!-- Crear campos de entrada para cada parámetro -->
               <v-row v-for="(value, key) in editedDevice.parameters" :key="key">
-                <v-col cols="100" >
+                <v-col cols="100">
                   <template v-if="isBoolean(value)">
                     <v-autocomplete variant="outlined" :label="key"  v-model="editedDevice.parameters[key]" :items="['true', 'false']"/>
                 </template>
@@ -62,7 +78,7 @@
             </v-form>
           </v-card-text>
           <v-card-actions class="modal-buttons">
-            <v-btn color="primary" variant="tonal" @click="saveChanges" >Guardar</v-btn>
+            <v-btn variant="flat" color="#242a30"  @click="saveChanges" >Guardar</v-btn>
             <v-overlay v-model="overlay" class="align-center justify-center" :model-value="this.loading">
           <v-progress-circular
             color="primary"
@@ -71,12 +87,13 @@
             :width="9"
         ></v-progress-circular>
     </v-overlay>
-            <v-btn variant="plain" @click="closeModal">Cancelar</v-btn>
+            <v-btn variant="tonal" @click="closeModal">Cancelar</v-btn>
           </v-card-actions>
         </v-card>
 
        
       </v-dialog>
+    
       
     </v-card>
 
@@ -102,6 +119,7 @@ export default {
       formIsValid: false,
       currentBoard: null,
       editedDevice: null,
+      deleteDialog: false,
       entriesPerPage: 5,
       loading: false,
       snackbar: {
@@ -148,6 +166,10 @@ export default {
           console.error(error);
         });
     },
+    refreshData() {
+      this.fetchBoards();
+      this.showSnackbar('Datos actualizados', 'success');
+    },
     openModal(item) {
       this.currentBoard = item;
       this.editedDevice = { ...item };
@@ -181,17 +203,32 @@ export default {
     });
     },
 
-    deleteDevice(item) {
-      const id = item._id;
-      
-      axios.delete(`http://localhost:8080/boards/${id}`)
-        .then(response => {
-          console.log('Placa eliminada con éxito:', response.data);
-        })
-        .catch(error => {
-          console.error('Error al eliminar la placa:', error);
-        });
+    deleteConfirmation(item) {
+      this.selectedItem = item;
+      this.deleteDialog = true;
     },
+    cancelDelete() {
+      this.deleteDialog = false;
+    },
+
+    deleteDevice(item) {
+  const id = item._id;
+  
+  axios.delete(`http://localhost:8080/boards/${id}`)
+    .then(response => {
+      console.log('Placa eliminada con éxito:', response.data);
+      this.fetchBoards();
+      this.showSnackbar('Placa eliminada con éxito', 'success');
+    })
+    .catch(error => {
+      console.error('Error al eliminar la placa:', error);
+      this.showSnackbar('Error al eliminar la placa', 'error');
+    })
+    .finally(() => {
+      this.deleteDialog = false;
+    });
+},
+
   
     showSnackbar(text, color) {
     this.snackbar.text = text;
@@ -238,7 +275,7 @@ export default {
 }
 
 .table-component {
-  width: 60%;
+  width: 50%;
   border-top-left-radius: 0px;
   border-top-right-radius: 0px;
   box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.5);
@@ -247,10 +284,13 @@ export default {
 .table-title-component {
   background-color: #242a30;
   color: white;
-  width: 60%;
+  width: 50%;
+  display: flex;
+  padding: 5px;
   border-bottom-left-radius: 0px;
   border-bottom-right-radius: 0px;
   box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 0.5);
+  align-items: center;
 }
 
 .modal-buttons {
@@ -263,7 +303,6 @@ export default {
   left: 50%;
   transform: translate(-50%, -50%);
 }
-
 
 
 </style>
