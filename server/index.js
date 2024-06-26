@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
 const board = require("./src/routes/board.js");
+const user = require("./src/routes/user.js");
 const connectDB = require("./src/config/db.js");
 const connectMQTT = require("./src/config/mqtt.js");
 
@@ -16,6 +17,8 @@ connectDB()
     console.log("Connected to MongoDB");
 
     const mqttClient = connectMQTT();
+
+    app.use("/users", user);
 
     app.use(
       "/boards",

@@ -1,8 +1,10 @@
 <template>
-  <nav class="top-nav">
+  <nav class="top-nav" v-if="isAuthenticated">
     <div class="nav-links">
       <router-link to="/dashboard" class="nav-item" exact>Dispositivos</router-link>
-      <router-link to="/log" class="nav-item" exact>Registro de Logs</router-link>
+       <!--<router-link to="/log" class="nav-item" exact>Registro de Logs</router-link>-->
+      
+      <button class="nav-item" @click="logout">Cerrar sesión</button>
     </div>
   </nav>
 </template>
@@ -10,6 +12,17 @@
 <script>
 export default {
   name: 'Navbar',
+  computed: {
+    isAuthenticated() {
+      return !!localStorage.getItem('token');
+    }
+  },
+  methods: {
+    logout() {
+      localStorage.removeItem('token'); 
+      this.$router.push('/login');
+    }
+  }
 };
 </script>
 
@@ -32,18 +45,17 @@ export default {
   text-decoration: none;
   margin: 0 1rem;
   padding: 0.5rem 1rem;
-  border-bottom: 3px solid transparent; /* Borde transparente por defecto */
+  border-bottom: 3px solid transparent;
   transition: color 0.3s, border-bottom 0.3s;
 }
 
 .router-link-exact-active {
-  border-bottom: 3px solid white; /* Borde blanco para el elemento activo */
-  padding-bottom: calc(0.5rem - 3px); /* Ajusta el relleno para que el borde no aumente el tamaño del elemento */
+  border-bottom: 3px solid white; 
+  padding-bottom: calc(0.5rem - 3px); 
 }
 
-/* Ajuste para que el borde no afecte el tamaño del elemento */
 .nav-item {
-  padding-bottom: calc(0.5rem - 3px); /* Ajusta el relleno para que sea el original menos el borde */
+  padding-bottom: calc(0.5rem - 3px); 
 }
 
 </style>

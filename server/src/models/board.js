@@ -3,6 +3,7 @@ const Schema = mongoose.Schema;
 
 const boardSchema = new Schema({
   Device: { type: String, required: true },
+  Protocol: { type: String, required: true },
   Ip: { type: String, required: true },
   Status: { type: String, required: true },
   parameters: {

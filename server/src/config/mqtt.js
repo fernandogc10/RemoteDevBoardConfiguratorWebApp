@@ -57,11 +57,14 @@ const connectMQTT = (dbClient) => {
             return acc;
           }, {});
 
+          const protocol = Ip === "0.0.0.0" ? "LoRA" : "Wi-Fi";
+
           const result = await Board.findOneAndUpdate(
             { Device },
             {
               $set: {
                 Device,
+                Protocol: protocol,
                 Ip,
                 Status: "active",
                 parameters: stringParameters,

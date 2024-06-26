@@ -3,8 +3,6 @@ const LogMessage = require("../models/message");
 const { publishWithConfirmation } = require("../config/mqtt.js");
 
 const getBoards = async (req, res) => {
-  console.log("getBoards");
-
   try {
     const boards = await Board.find().exec();
 
