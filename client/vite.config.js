@@ -1,5 +1,5 @@
 import { fileURLToPath, URL } from "node:url";
-
+import fs from "fs";
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
 
@@ -13,6 +13,10 @@ export default defineConfig({
   },
   server: {
     host: "0.0.0.0",
+    https: {
+      key: fs.readFileSync(process.env.SSL_KEY_PATH),
+      cert: fs.readFileSync(process.env.SSL_CERT_PATH),
+    },
     proxy: {
       "/users": {
         target: "http://backend:8080",

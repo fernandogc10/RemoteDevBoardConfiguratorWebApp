@@ -1,6 +1,6 @@
 const mqtt = require("mqtt");
 const schedule = require("node-schedule");
-
+const fs = require("fs");
 const BOARDS_TOPIC = "boards/registry";
 const DATABASE_NAME = "rdbc_db";
 const COLLECTION_NAME = "boards";
@@ -10,11 +10,23 @@ const LogMessage = require("../models/message.js");
 const pendingConfirmations = new Map();
 
 const connectMQTT = (dbClient) => {
-  const options = {
+  /* const options = {
     username: "tester",
     password: "1234",
+  };*/
+
+  //const client = mqtt.connect("mqtt://mosquitto:1883", options);
+
+  const options = {
+    username: process.env.MQTT_USERNAME,
+    password: process.env.MQTT_PASSWORD,
+    ca: fs.readFileSync(process.env.MQTT_CA_CERT_PATH),
+    cert: fs.readFileSync(process.env.MQTT_CLIENT_CERT_PATH),
+    key: fs.readFileSync(process.env.MQTT_CLIENT_KEY_PATH),
+    rejectUnauthorized: false,
   };
-  const client = mqtt.connect("mqtt://mosquitto:1883", options);
+
+  const client = mqtt.connect(process.env.MQTT_BROKER_URL, options);
 
   client.on("connect", () => {
     console.log("Connected to MQTT server");

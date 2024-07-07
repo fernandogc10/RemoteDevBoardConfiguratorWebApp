@@ -20,10 +20,13 @@ services:
     container_name: mosquitto
     ports:
       - "1883:1883"
-      - "9001:9001"
+      - "8883:8883"
     volumes:
       - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
       - ./mosquitto/passwordfile:/mosquitto/config/passwordfile
+      - ./mosquitto/mosquitto-server.crt:/mosquitto/config/mosquitto-server.crt
+      - ./mosquitto/mosquitto-server.key:/mosquitto/config/mosquitto-server.key
+      - ./mosquitto/ca.crt:/mosquitto/config/ca.crt
       - mosquitto-data:/mosquitto/data
       - mosquitto-log:/mosquitto/log
     networks:
@@ -36,12 +39,22 @@ services:
       - "8080:8080"
     volumes:
       - backend-data:/usr/src/app
+      - ./mosquitto/ca.crt:/usr/src/app/ca.crt
+      - ./certs/client.crt:/usr/src/app/client.crt
+      - ./certs/client.key:/usr/src/app/client.key
+
     depends_on:
       - mongodb
       - mosquitto
     environment:
       - USERNAME=admin
       - PASSWORD=admin123
+      - MQTT_BROKER_URL=mqtts://mosquitto:8883
+      - MQTT_CA_CERT_PATH=/usr/src/app/ca.crt
+      - MQTT_CLIENT_CERT_PATH=/usr/src/app/client.crt
+      - MQTT_CLIENT_KEY_PATH=/usr/src/app/client.key
+      - MQTT_USERNAME=tester
+      - MQTT_PASSWORD=1234
     networks:
       - mynetwork
 
@@ -53,6 +66,11 @@ services:
     volumes:
       - frontend-data:/usr/src/app
       - /usr/src/app/node_modules
+      - ./certs/localhost.pem:/usr/src/app/localhost.pem
+      - ./certs/localhost-key.pem:/usr/src/app/localhost-key.pem
+    environment:
+      - SSL_KEY_PATH=/usr/src/app/localhost-key.pem
+      - SSL_CERT_PATH=/usr/src/app/localhost.pem
     depends_on:
       - backend
     networks:
