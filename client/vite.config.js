@@ -13,5 +13,19 @@ export default defineConfig({
   },
   server: {
     host: "0.0.0.0",
+    proxy: {
+      "/users": {
+        target: "http://backend:8080",
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path.replace(/^\/users/, "/users"),
+      },
+      "/boards": {
+        target: "http://backend:8080",
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path.replace(/^\/boards/, "/boards"),
+      },
+    },
   },
 });

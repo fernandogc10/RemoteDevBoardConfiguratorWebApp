@@ -67,7 +67,7 @@
       login() {
         console.log(JSON.stringify({ username: this.username, password: this.password }));
   
-        axios.post('http://localhost:8080/users/login', {
+        axios.post('/users/login', {
           username: this.username,
           password: this.password
         }, {

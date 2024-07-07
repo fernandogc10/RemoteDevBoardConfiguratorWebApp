@@ -179,7 +179,7 @@ export default {
   methods: {
     fetchBoards() {
       axios
-        .get('http://localhost:8080/boards')
+        .get('/boards')
         .then((response) => {
           this.boards = response.data;
         })
@@ -206,7 +206,7 @@ export default {
 
       axios
         .patch(
-          `http://localhost:8080/boards/${this.editedDevice._id}/update`,
+          `boards/${this.editedDevice._id}/update`,
           this.editedDevice
         )
         .then((response) => {
@@ -238,7 +238,7 @@ export default {
       const id = item._id;
 
       axios
-        .delete(`http://localhost:8080/boards/${id}`)
+        .delete(`/boards/${id}`)
         .then((response) => {
           console.log('Placa eliminada con éxito:', response.data);
           this.fetchBoards();

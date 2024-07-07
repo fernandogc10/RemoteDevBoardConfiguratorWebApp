@@ -1,33 +1,75 @@
-version: "3.8"
+version: '3.8'
 
 services:
   mongodb:
-    image: mongo:4.4.6
+    image: mongo:latest
     container_name: mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+      MONGO_INITDB_DATABASE: rdbc_db
     ports:
       - "27017:27017"
-    # environment:
-    #   MONGO_INITDB_ROOT_USERNAME: root
-    #   MONGO_INITDB_ROOT_PASSWORD: example
     volumes:
-      - mongodb_data:/data/db
+      - mongo-data:/data/db
+    networks:
+      - mynetwork
 
   mosquitto:
-    image: eclipse-mosquitto:2.0
+    image: eclipse-mosquitto:latest
     container_name: mosquitto
     ports:
       - "1883:1883"
       - "9001:9001"
     volumes:
-      - mosquitto_data:/mosquitto/data
-      - mosquitto_log:/mosquitto/log
-      - mosquitto_config:/mosquitto/config
+      - ./mosquitto/mosquitto.conf:/mosquitto/config/mosquitto.conf
+      - ./mosquitto/passwordfile:/mosquitto/config/passwordfile
+      - mosquitto-data:/mosquitto/data
+      - mosquitto-log:/mosquitto/log
+    networks:
+      - mynetwork
+
+  backend:
+    build: ./server
+    container_name: backend
+    ports:
+      - "8080:8080"
+    volumes:
+      - backend-data:/usr/src/app
+    depends_on:
+      - mongodb
+      - mosquitto
     environment:
-      - MOSQUITTO_USERNAME=root
-      - MOSQUITTO_PASSWORD=example
+      - USERNAME=admin
+      - PASSWORD=admin123
+    networks:
+      - mynetwork
+
+  frontend:
+    build: ./client
+    container_name: frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - frontend-data:/usr/src/app
+      - /usr/src/app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - mynetwork
+
+networks:
+  mynetwork:
+    driver: bridge
 
 volumes:
-  mongodb_data:
-  mosquitto_data:
-  mosquitto_log:
-  mosquitto_config:
+  mongo-data:
+    driver: local
+  mosquitto-data:
+    driver: local
+  mosquitto-log:
+    driver: local
+  backend-data:
+    driver: local
+  frontend-data:
+    driver: local

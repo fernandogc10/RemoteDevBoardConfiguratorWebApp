@@ -14,7 +14,7 @@ const connectMQTT = (dbClient) => {
     username: "tester",
     password: "1234",
   };
-  const client = mqtt.connect("mqtt://localhost:1883", options);
+  const client = mqtt.connect("mqtt://mosquitto:1883", options);
 
   client.on("connect", () => {
     console.log("Connected to MQTT server");
