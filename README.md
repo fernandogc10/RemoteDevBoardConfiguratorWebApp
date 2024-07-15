@@ -60,3 +60,25 @@ Follow these instructions to get the **RemoteDevBoardConfiguratorWebApp** up and
    - `certs/` for frontend and client certificates.
    - `mosquitto/` for Mosquitto server certificates and configuration.
 
+3. **Create the Docker Compose File:**
+
+   Use the `docker-compose.yml` file provided to set up and run the Docker containers.
+   
+5. **Start the Services:**
+
+    Run the following command to start all the services defined in the `docker-compose.yml` file:
+
+    ```bash
+    docker-compose up -d
+    ```
+
+   This command will build the images (if not already built), create the containers, and start the services in detached mode.
+
+6. **Access the Web Application:**
+
+   After starting the services, you can access the web application at [https://localhost:5173](https://localhost:5173). 
+
+   - **Backend API:** [http://localhost:8080](http://localhost:8080)
+   - **MongoDB:** Accessible from the container network on port `27017`
+   - **Mosquitto MQTT Broker:** Accessible at `mqtts://localhost:8883` for secure MQTT connections.
+
