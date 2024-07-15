@@ -82,3 +82,30 @@ Follow these instructions to get the **RemoteDevBoardConfiguratorWebApp** up and
    - **MongoDB:** Accessible from the container network on port `27017`
    - **Mosquitto MQTT Broker:** Accessible at `mqtts://localhost:8883` for secure MQTT connections.
 
+## Configuration
+
+### Environment Variables
+
+- **`USERNAME`**: The admin username for the backend. *(default: `admin`)*
+- **`PASSWORD`**: The admin password for the backend. *(default: `admin123`)*
+- **`MQTT_BROKER_URL`**: The URL for the MQTT broker. *(default: `mqtts://mosquitto:8883`)*
+- **`MQTT_CA_CERT_PATH`**: Path to the CA certificate for MQTT. *(default: `/usr/src/app/ca.crt`)*
+- **`MQTT_CLIENT_CERT_PATH`**: Path to the client certificate for MQTT. *(default: `/usr/src/app/client.crt`)*
+- **`MQTT_CLIENT_KEY_PATH`**: Path to the client key for MQTT. *(default: `/usr/src/app/client.key`)*
+- **`MQTT_USERNAME`**: MQTT username for authentication. *(default: `tester`)*
+- **`MQTT_PASSWORD`**: MQTT password for authentication. *(default: `1234`)*
+
+### Additional Configuration
+
+If you need to modify the Mosquitto configuration or add more certificates, edit the files in the `./mosquitto` directory:
+
+- **`mosquitto.conf`**: Mosquitto server configuration.
+- **`passwordfile`**: File containing MQTT user credentials.
+- **`mosquitto-server.crt`**: Server certificate for MQTT.
+- **`mosquitto-server.key`**: Private key for the MQTT server certificate.
+- **`ca.crt`**: CA certificate for validating the MQTT server certificate.
+
+For frontend SSL/TLS configurations, ensure the `localhost.pem` and `localhost-key.pem` files are in the `./certs` directory.
+
+
+
